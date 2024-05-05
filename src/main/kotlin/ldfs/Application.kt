@@ -1,6 +1,7 @@
 package ldfs
 
 import io.ktor.server.application.Application
+import ldfs.plugins.configureCoin
 import ldfs.plugins.configureRouting
 import ldfs.plugins.configureSwagger
 
@@ -9,6 +10,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureCoin()
     configureSwagger()
     configureRouting()
 }
