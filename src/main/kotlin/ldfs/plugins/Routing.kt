@@ -13,6 +13,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.io.File
+import java.util.UUID
 
 fun Application.configureRouting() {
 
@@ -29,7 +30,16 @@ fun Application.configureRouting() {
 
             val chunkUuid = (allPart.firstOrNull {
                 it is PartData.FormItem && it.name == "chunkUuid"
-            } as PartData.FormItem?)?.value ?: run {
+            } as PartData.FormItem?)?.value?.let {
+                runCatching { UUID.fromString(it) }.onFailure {
+                    call.respondText(
+                        text = "Chunk UUID wrong format",
+                        contentType = ContentType.Text.Plain,
+                        status = HttpStatusCode.BadRequest,
+                    )
+                    return@post
+                }
+            } ?: run {
                 call.respondText(
                     text = "Chunk UUID not found",
                     contentType = ContentType.Text.Plain,
