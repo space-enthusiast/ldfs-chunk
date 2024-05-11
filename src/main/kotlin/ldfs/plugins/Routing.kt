@@ -16,7 +16,6 @@ import java.io.File
 import java.util.UUID
 
 fun Application.configureRouting() {
-
     val cashFolder = environment.config.property("cash-folder-path").getString()
 
     routing {
@@ -25,33 +24,35 @@ fun Application.configureRouting() {
         }
 
         post("/upload") {
-
             val allPart = call.receiveMultipart().readAllParts()
 
-            val chunkUuid = (allPart.firstOrNull {
-                it is PartData.FormItem && it.name == "chunkUuid"
-            } as PartData.FormItem?)?.value?.let {
-                runCatching { UUID.fromString(it) }.onFailure {
+            val chunkUuid =
+                (
+                    allPart.firstOrNull {
+                        it is PartData.FormItem && it.name == "chunkUuid"
+                    } as PartData.FormItem?
+                )?.value?.let {
+                    runCatching { UUID.fromString(it) }.onFailure {
+                        call.respondText(
+                            text = "Chunk UUID wrong format",
+                            contentType = ContentType.Text.Plain,
+                            status = HttpStatusCode.BadRequest,
+                        )
+                        return@post
+                    }
+                } ?: run {
                     call.respondText(
-                        text = "Chunk UUID wrong format",
+                        text = "Chunk UUID not found",
                         contentType = ContentType.Text.Plain,
                         status = HttpStatusCode.BadRequest,
                     )
                     return@post
                 }
-            } ?: run {
-                call.respondText(
-                    text = "Chunk UUID not found",
-                    contentType = ContentType.Text.Plain,
-                    status = HttpStatusCode.BadRequest,
-                )
-                return@post
-            }
 
             allPart.mapNotNull { part ->
                 when (part) {
                     is PartData.FileItem -> {
-                        File("${cashFolder}/${System.currentTimeMillis()}-${chunkUuid}").also {
+                        File("$cashFolder/${System.currentTimeMillis()}-$chunkUuid").also {
                             part.streamProvider().use { input ->
                                 it.outputStream().buffered().use { output ->
                                     input.copyTo(output)

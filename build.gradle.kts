@@ -8,6 +8,7 @@ plugins {
     kotlin("jvm") version "1.9.23"
     id("io.ktor.plugin") version "2.3.10"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    kotlin("plugin.serialization") version "1.5.31"
 }
 
 group = "ldfs"
@@ -34,6 +35,10 @@ dependencies {
     implementation("io.github.smiley4:ktor-swagger-ui:2.1.0")
     implementation("io.insert-koin:koin-ktor:$koin_ktor")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_ktor")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
