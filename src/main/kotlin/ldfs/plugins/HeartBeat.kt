@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.net.InetAddress
+import java.nio.file.Files
+import java.nio.file.Paths
 
 fun Application.startHeartBeat() {
     val totalSizeInByte = environment.config.property("totalSizeInByte").getString()
@@ -22,15 +24,16 @@ fun Application.startHeartBeat() {
     val port =
         environment.config.propertyOrNull("ktor.deployment.port")?.getString()
             ?: throw Exception("can not get port")
-    val folderSize = getFolderSize(saveFolder)
-    val remainingSize = totalSizeInByte.toLong() - folderSize
     val masterAddress = environment.config.property("masterAddress").getString()
     println("Server is running on port: $port")
     println("Server is running on IP: $ip")
-    println("Server remaining size: $remainingSize")
     println("Master address: $masterAddress")
     launch {
         while (true) {
+            val folderSize = getFolderSize(saveFolder)
+            val remainingSize = totalSizeInByte.toLong() - folderSize
+            println("Server remaining size: $remainingSize")
+            println("Server folder size: $folderSize")
             delay(1000)
             kotlin.runCatching {
                 sendHeartBeat(
@@ -88,5 +91,10 @@ private suspend fun sendHeartBeat(
 
 fun getFolderSize(folderPath: String): Long {
     val folder = File(folderPath)
-    return folder.walk().filter { it.isFile }.map { it.length() }.sum()
+    return folder.walk()
+        .filter { it.isFile && !Files.isHidden(Paths.get(it.absolutePath)) }
+        .map {
+            it.length()
+        }
+        .sum()
 }
