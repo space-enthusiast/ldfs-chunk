@@ -86,6 +86,8 @@ private suspend fun sendHeartBeat(
     }.onFailure {
         client.close()
         throw it
+    }.onSuccess {
+        client.close()
     }
 }
 
