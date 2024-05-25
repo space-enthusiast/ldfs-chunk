@@ -67,6 +67,7 @@ private suspend fun sendHeartBeat(
             install(ContentNegotiation) {
                 json()
             }
+            expectSuccess = true
         }
     runCatching {
         val req =
