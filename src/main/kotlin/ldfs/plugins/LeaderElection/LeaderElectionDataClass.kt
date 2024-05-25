@@ -1,4 +1,4 @@
-package ldfs.plugins
+package ldfs.plugins.LeaderElection
 
 data class ChunkServerEntity(val ip: String, val port: Int)
 
