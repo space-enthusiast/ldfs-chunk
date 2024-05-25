@@ -33,7 +33,6 @@ fun Application.startHeartBeat() {
         while (true) {
             val folderSize = getFolderSize(saveFolder)
             val remainingSize = totalSizeInByte.toLong() - folderSize
-            log.info("Server remaining size: $remainingSize, Server folder size: $folderSize".trimIndent())
             delay(1000)
             kotlin.runCatching {
                 sendHeartBeat(
@@ -42,6 +41,7 @@ fun Application.startHeartBeat() {
                     chunkServerPort = port,
                     remainingSize = remainingSize,
                 )
+                log.info("Server remaining size: $remainingSize, Server folder size: $folderSize".trimIndent())
             }.onFailure {
                 log.error("Heartbeat error", it)
             }
