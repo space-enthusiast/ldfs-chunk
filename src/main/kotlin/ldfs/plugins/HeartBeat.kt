@@ -9,6 +9,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
+import io.ktor.server.application.log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -25,15 +26,14 @@ fun Application.startHeartBeat() {
         environment.config.propertyOrNull("ktor.deployment.port")?.getString()
             ?: throw Exception("can not get port")
     val masterAddress = environment.config.property("masterAddress").getString()
-    println("Server is running on port: $port")
-    println("Server is running on IP: $ip")
-    println("Master address: $masterAddress")
+
+    log.info("Server is running on port: $port, Server is running on IP: $ip, Master address: $masterAddress")
+
     launch {
         while (true) {
             val folderSize = getFolderSize(saveFolder)
             val remainingSize = totalSizeInByte.toLong() - folderSize
-            println("Server remaining size: $remainingSize")
-            println("Server folder size: $folderSize")
+            log.info("Server remaining size: $remainingSize, Server folder size: $folderSize".trimIndent())
             delay(1000)
             kotlin.runCatching {
                 sendHeartBeat(
@@ -43,9 +43,7 @@ fun Application.startHeartBeat() {
                     remainingSize = remainingSize,
                 )
             }.onFailure {
-                println("Heartbeat error")
-            }.onSuccess {
-                println("Heartbeat sent")
+                log.error("Heartbeat error", it)
             }
         }
     }
@@ -82,7 +80,6 @@ private suspend fun sendHeartBeat(
                     ),
                 )
             }
-        println("status: ${req.status}")
     }.onFailure {
         client.close()
         throw it
